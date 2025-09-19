@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurassic Park Pinball Complete Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #34495e, #1a252f);
+            color: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e74c3c;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 2.8em;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 10px #e74c3c; }
+            to { text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px #e74c3c, 0 0 30px #e74c3c; }
+        }
+
+        .header-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #e74c3c;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding: 5px;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: #bdc3c7;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tab-button.active {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(231, 76, 60, 0.2);
+            color: #ecf0f1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-state {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e74c3c;
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .mode-button:hover::before {
+            left: 100%;
+        }
+
+        .mode-button.available {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .mode-button.active {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .mode-button.locked {
+            background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+            color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .mode-button.completed {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: #2ecc71;
+            border: 2px solid #2ecc71;
+        }
+
+        .mode-icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .mode-name {
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .mode-info {
+            display: none;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .mode-info.active {
+            display: block;
+        }
+
+        .mode-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .mode-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.8em;
+            color: #e74c3c;
+            margin-right: auto;
+        }
+
+        .mode-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-active { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+        .status-completed { background: rgba(39, 174, 96, 0.2); color: #27ae60; }
+        .status-qualifying { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+
+        .gimmick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .gimmick-card {
+            background: rgba(52, 73, 94, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #34495e;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .gimmick-card:hover {
+            background: rgba(52, 73, 94, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .gimmick-card.completed {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-color: #229954;
+        }
+
+        .gimmick-card.active {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border-color: #d35400;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+        }
+
+        .gimmick-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .gimmick-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #e74c3c;
+        }
+
+        .gimmick-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #34495e;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .gimmick-value {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .gimmick-details {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .requirements-list {
+            margin-top: 5px;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin: 3px 0;
+            color: #95a5a6;
+        }
+
+        .requirement.completed {
+            color: #2ecc71;
+        }
+
+        .requirement-icon {
+            margin-right: 8px;
+            font-size: 0.8em;
+            width: 16px;
+            text-align: center;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .control-btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-summary {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #34495e;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(52, 73, 94, 0.5);
+            border-radius: 5px;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #95a5a6;
+            margin-top: 2px;
+        }
+
+        .multiball-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            display: none;
+            animation: multiballFlash 1s infinite alternate;
+        }
+
+        @keyframes multiballFlash {
+            from { opacity: 0.8; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.05); }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #e74c3c;
+            margin-right: 20px;
+        }
+
+        .section-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .mode-selector {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .gimmick-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦕 Jurassic Park Pinball Complete Explorer</h1>
+        
+        <div class="header-info">
+            <h2>Complete Game Structure Explorer</h2>
+            <p>Track all modes, multiballs, and gimmicks with interactive progress tracking</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('modes')">🦖 Major Modes</button>
+            <button class="tab-button" onclick="switchTab('multiballs')">⚡ Multiballs</button>
+            <button class="tab-button" onclick="switchTab('gimmicks')">🎯 Gimmicks & Features</button>
+            <button class="tab-button" onclick="switchTab('awards')">🏆 Awards & Collectibles</button>
+        </div>
+
+        <div id="modes" class="tab-content active">
+            <div class="progress-summary">
+                <h3>Overall Game Progress</h3>
+                <div class="progress-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalProgress">0%</span>
+                        <span class="stat-label">Completion</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="activeMultiballs">0</span>
+                        <span class="stat-label">Active Multiballs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="completedModes">0/9</span>
+                        <span class="stat-label">Modes Completed</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalScore">0</span>
+                        <span class="stat-label">Estimated Score</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-state">
+                <div class="section-header">
+                    <span class="section-icon">🎮</span>
+                    <h2 class="section-title">Major Game Modes</h2>
+                </div>
+                <div class="mode-selector" id="modeSelector"></div>
+            </div>
+
+            <div id="modeInfo"></div>
+        </div>
+
+        <div id="multiballs" class="tab-content">
+            <div class="game-state">
+                <div class="section-header">
+                    <span class="section-icon">⚡</span>
+                    <h2 class="section-title">Multiball Modes</h2>
+                </div>
+                <div class="gimmick-grid" id="multiballGrid"></div>
+            </div>
+        </div>
+
+        <div id="gimmicks" class="tab-content">
+            <div class="game-state">
+                <div class="section-header">
+                    <span class="section-icon">🎯</span>
+                    <h2 class="section-title">Gimmicks & Features</h2>
+                </div>
+                <div class="gimmick-grid" id="gimmickGrid"></div>
+            </div>
+        </div>
+
+        <div id="awards" class="tab-content">
+            <div class="game-state">
+                <div class="section-header">
+                    <span class="section-icon">🏆</span>
+                    <h2 class="section-title">Awards & Collectibles</h2>
+                </div>
+                <div class="gimmick-grid" id="awardsGrid"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="resetGame()">🔄 Reset Game</button>
+            <button class="control-btn" onclick="completeCurrentSection()">✅ Complete Current</button>
+            <button class="control-btn" onclick="startRandomMultiball()">⚡ Random Multiball</button>
+        </div>
+    </div>
+
+    <div class="multiball-indicator" id="multiballIndicator">
+        ⚡ MULTIBALL ACTIVE! ⚡
+    </div>
+
+    <script>
+        // Complete Jurassic Park Pinball game data structure
+        const gameData = {
+            majorModes: [
+                {
+                    id: 'trex',
+                    name: 'T-Rex Multiball',
+                    icon: '🦖',
+                    type: 'multiball',
+                    requirements: [
+                        '3× T-Rex World targets',
+                        '2× T-Rex awards from Fossil side targets',
+                        '25M points in single ball play'
+                    ],
+                    shots: [
+                        { name: 'T-Rex World', value: '10M → 50M', maxShots: 3, points: [10000000, 25000000, 50000000], type: 'target' },
+                        { name: 'Left Ramp', value: '15M', maxShots: 5, points: [15000000], type: 'ramp' },
+                        { name: 'Right Ramp', value: '20M', maxShots: 4, points: [20000000], type: 'ramp' },
+                        { name: 'Pop Bumpers', value: '5M per hit', maxShots: 10, points: [5000000], type: 'bumper' }
+                    ],
+                    multiball: { balls: 3, jackpot: '50M', superJackpot: '100M' }
+                },
+                {
+                    id: 'raptor',
+                    name: 'Raptor Rampage',
+                    icon: '🦅',
+                    type: 'mode',
+                    requirements: [
+                        '2× Raptor Pen (3× left orbit)',
+                        '3× Raptor targets',
+                        'Collect Raptor Hurry Up (25M)'
+                    ],
+                    shots: [
+                        { name: 'Raptor Pen', value: '8M → 40M', maxShots: 3, points: [8000000, 24000000, 40000000], type: 'orbit' },
+                        { name: 'Raptor Targets', value: '12M each', maxShots: 6, points: [12000000], type: 'target' },
+                        { name: 'Center Ramp', value: '18M', maxShots: 4, points: [18000000], type: 'ramp' },
+                        { name: 'Drop Targets', value: '6M each', maxShots: 3, points: [6000000], type: 'drop' }
+                    ]
+                },
+                {
+                    id: 'kitchen',
+                    name: 'Kitchen Chaos',
+                    icon: '🍳',
+                    type: 'mode',
+                    requirements: [
+                        '3× Kitchen Entrance (right orbit)',
+                        'Hit all 3 Kitchen standups',
+                        'Collect Kitchen Hurry Up (30M)'
+                    ],
+                    shots: [
+                        { name: 'Kitchen Entrance', value: '15M → 75M', maxShots: 4, points: [15000000, 35000000, 55000000, 75000000], type: 'orbit' },
+                        { name: 'Kitchen Standups', value: '10M each', maxShots: 8, points: [10000000], type: 'standup' },
+                        { name: 'Left Loop', value: '25M', maxShots: 3, points: [25000000], type: 'loop' },
+                        { name: 'Right Loop', value: '20M', maxShots: 3, points: [20000000], type: 'loop' }
+                    ]
+                },
+                {
+                    id: 'embassy',
+                    name: 'Siege at the Embassy',
+                    icon: '🏛️',
+                    type: 'mode',
+                    requirements: [
+                        '3× Embassy Saucer shots',
+                        'Complete all 4 Siege levels',
+                        'Collect 3× Siege Hurry Ups'
+                    ],
+                    shots: [
+                        { name: 'Embassy Saucer', value: '30M → 120M', maxShots: 4, points: [30000000, 60000000, 90000000, 120000000], type: 'saucer' },
+                        { name: 'Siege Targets', value: '15M each', maxShots: 6, points: [15000000], type: 'target' },
+                        { name: 'Upper Playfield', value: '40M', maxShots: 3, points: [40000000], type: 'playfield' },
+                        { name: 'Flipper Triggers', value: '8M each', maxShots: 4, points: [8000000], type: 'trigger' }
+                    ]
+                },
+                {
+                    id: 'hatchery',
+                    name: 'Hatchery Heist',
+                    icon: '🥚',
+                    type: 'mode',
+                    requirements: [
+                        '2× Hatchery shots (left ramp)',
+                        'Collect 2× Hatchery awards',
+                        '25M points during qualification'
+                    ],
+                    shots: [
+                        { name: 'Hatchery Ramp', value: '12M → 60M', maxShots: 4, points: [12000000, 30000000, 45000000, 60000000], type: 'ramp' },
+                        { name: 'Egg Targets', value: '10M each', maxShots: 5, points: [10000000], type: 'target' },
+                        { name: 'Dinosaur Fossils', value: '18M', maxShots: 3, points: [18000000], type: 'target' },
+                        { name: 'Bumper Hits', value: '6M each', maxShots: 8, points: [6000000], type: 'bumper' }
+                    ]
+                },
+                {
+                    id: 'supply',
+                    name: 'Supply Drop',
+                    icon: '📦',
+                    type: 'mode',
+                    requirements: [
+                        '3× Supply Drop shots (right ramp)',
+                        'Hit all 3 Supply targets',
+                        'Collect Supply Hurry Up (35M)'
+                    ],
+                    shots: [
+                        { name: 'Supply Drop', value: '20M → 80M', maxShots: 3, points: [20000000, 50000000, 80000000], type: 'ramp' },
+                        { name: 'Supply Targets', value: '14M each', maxShots: 6, points: [14000000], type: 'target' },
+                        { name: 'Left Ramp', value: '22M', maxShots: 4, points: [22000000], type: 'ramp' },
+                        { name: 'Standup Targets', value: '9M each', maxShots: 5, points: [9000000], type: 'standup' }
+                    ]
+                },
+                {
+                    id: 'river',
+                    name: 'River Chase',
+                    icon: '🚤',
+                    type: 'mode',
+                    requirements: [
+                        '3× River Chase shots (left orbit)',
+                        'Complete River sequence',
+                        'Collect River Hurry Up (28M)'
+                    ],
+                    shots: [
+                        { name: 'River Chase', value: '16M → 64M', maxShots: 4, points: [16000000, 38000000, 52000000, 64000000], type: 'orbit' },
+                        { name: 'River Targets', value: '13M each', maxShots: 5, points: [13000000], type: 'target' },
+                        { name: 'Center Loop', value: '24M', maxShots: 3, points: [24000000], type: 'loop' },
+                        { name: 'Drop Targets', value: '7M each', maxShots: 4, points: [7000000], type: 'drop' }
+                    ]
+                },
+                {
+                    id: 'maintenance',
+                    name: 'Maintenance Facility',
+                    icon: '🔧',
+                    type: 'mode',
+                    requirements: [
+                        '2× Maintenance shots (center ramp)',
+                        'Hit all Maintenance targets',
+                        '25M points during qualification'
+                    ],
+                    shots: [
+                        { name: 'Maintenance Ramp', value: '18M → 72M', maxShots: 3, points: [18000000, 45000000, 72000000], type: 'ramp' },
+                        { name: 'Maintenance Targets', value: '11M each', maxShots: 6, points: [11000000], type: 'target' },
+                        { name: 'Right Loop', value: '26M', maxShots: 3, points: [26000000], type: 'loop' },
+                        { name: 'Bumpers', value: '5M each', maxShots: 10, points: [5000000], type: 'bumper' }
+                    ]
+                },
+                {
+                    id: 'wizard',
+                    name: 'Jurassic Park Rampage (Wizard)',
+                    icon: '⚡',
+                    type: 'wizard',
+                    requirements: [
+                        'Complete all 8 base modes',
+                        'Start T-Rex Multiball',
+                        '500M+ total points',
+                        'All dinosaur fossils collected'
+                    ],
+                    shots: [
+                        { name: 'All Major Shots', value: '100M+', maxShots: 8, points: [100000000], type: 'combo' },
+                        { name: 'Super Jets', value: '50M per hit', maxShots: 20, points: [50000000], type: 'bumper' },
+                        { name: 'Mega Jackpot', value: '200M+', maxShots: 6, points: [200000000], type: 'jackpot' },
+                        { name: 'Dinosaur Awards', value: '75M each', maxShots: 4, points: [75000000], type: 'award' }
+                    ],
+                    multiball: { balls: 5, jackpot: '100M', superJackpot: '250M', duration: '4:00' }
+                }
+            ],
+
+            multiballs: [
+                {
+                    id: 'mystery',
+                    name: 'Mystery Multiball',
+                    icon: '❓',
+                    requirements: ['Collect 3× Mystery awards', '25M points during qualification'],
+                    details: '2-ball multiball with mystery awards (Extra Ball, 2× scoring, etc.)',
+                    value: 'Random mystery award',
+                    maxProgress: 1,
+                    type: 'multiball'
+                },
+                {
+                    id: 'dino',
+                    name: 'Dinosaur Multiball',
+                    icon: '🦕',
+                    requirements: ['Complete all 6 Dinosaur Fossil shots', 'Start during single ball'],
+                    details: '3-ball multiball with dinosaur jackpot shots',
+                    value: '25M Jackpot, 50M Super Jackpot',
+                    maxProgress: 1,
+                    type: 'multiball'
+                },
+                {
+                    id: 'super',
+                    name: 'Super Dinosaur Multiball',
+                    icon: '🦖',
+                    requirements: ['Complete T-Rex Multiball', 'Hit 3× Super Jets during T-Rex'],
+                    details: '4-ball multiball with super jets and double jackpots',
+                    value: '50M Jackpot, 100M Super Jackpot',
+                    maxProgress: 1,
+                    type: 'multiball'
+                },
+                {
+                    id: 'final',
+                    name: 'Final Battle Multiball',
+                    icon: '⚔️',
+                    requirements: ['Complete Wizard Mode', 'Start final T-Rex battle'],
+                    details: '5-ball multiball with escalating jackpots',
+                    value: '100M+ Jackpot, 250M+ Super Jackpot',
+                    maxProgress: 1,
+                    type: 'multiball'
+                }
+            ],
+
+            gimmicks: [
+                {
+                    id: 'hurryup',
+                    name: 'Hurry-Up Modes',
+                    icon: '⏱️',
+                    requirements: ['Available after qualifying shots', 'Collect within time limit'],
+                    details: `T-Rex Hurry Up: 25M (T-Rex target)
+Raptor Hurry Up: 25M (Raptor pen)
+Kitchen Hurry Up: 30M (Kitchen entrance)
+Embassy Hurry Up: 35M (Embassy saucer)
+Supply Hurry Up: 35M (Supply drop)`,
+                    value: '25M-35M per hurry-up',
+                    maxProgress: 5,
+                    type: 'gimmick'
+                },
+                {
+                    id: 'fossils',
+                    name: 'Dinosaur Fossils',
+                    icon: '🦴',
+                    requirements: ['Hit Fossil side targets 6 times', 'Each fossil requires specific shots'],
+                    details: `1. Triceratops: 3× left ramp
+2. Stegosaurus: 3× right ramp
+3. Velociraptor: 3× left orbit
+4. Brachiosaurus: 3× right orbit
+5. Pteranodon: 3× center ramp
+6. T-Rex: 3× T-Rex targets`,
+                    value: 'Each fossil = 20M + mode start',
+                    maxProgress: 6,
+                    type: 'collectible'
+                },
+                {
+                    id: 'jets',
+                    name: 'Jet Awards',
+                    icon: '✈️',
+                    requirements: ['Hit pop bumpers 100 times total', 'Collect during single ball'],
+                    details: `Jet Awards cycle through:
+1. 2× Scoring (10s)
+2. Extra Ball
+3. 1M per bumper hit (20s)
+4. Ball Save (10s)
+5. 3× Scoring (15s)
+6. Add-a-Ball`,
+                    value: 'Progressive bumper multipliers',
+                    maxProgress: 6,
+                    type: 'award'
+                },
+                {
+                    id: 'mystery',
+                    name: 'Mystery Awards',
+                    icon: '🎁',
+                    requirements: ['Hit Mystery saucer 3 times', 'Available every ball'],
+                    details: `Random mystery awards:
+- Extra Ball (50% chance)
+- 2× Scoring (20s)
+- Light Extra Ball
+- 25M Points
+- Ball Saver (15s)
+- Advance mode progress`,
+                    value: 'Random valuable award',
+                    maxProgress: 3,
+                    type: 'gimmick'
+                },
+                {
+                    id: 'skillshot',
+                    name: 'Skill Shot',
+                    icon: '🎯',
+                    requirements: ['Plunge ball to lit lane', 'Available at ball start'],
+                    details: `Left lane: 2M + light left ramp
+Right lane: 2M + light right ramp
+Center lane: 3M + light Mystery
+Super Skill Shot: 10M (quick plunger)`,
+                    value: '2M-10M + lane lighting',
+                    maxProgress: 1,
+                    type: 'skillshot'
+                },
+                {
+                    id: 'combos',
+                    name: 'Shot Combos',
+                    icon: '🔥',
+                    requirements: ['Complete shot sequences quickly', 'Lights advance with each combo'],
+                    details: `Basic Combo: Left Ramp → Right Ramp (15M)
+Loop Combo: Left Loop → Right Loop (30M)
+Ramp Combo: Left Ramp → Center → Right Ramp (40M)
+Super Combo: All 6 major shots (75M)`,
+                    value: '15M-75M per combo',
+                    maxProgress: 4,
+                    type: 'combo'
+                }
+            ],
+
+            awards: [
+                {
+                    id: 'extraball',
+                    name: 'Extra Balls',
+                    icon: '⚪',
+                    requirements: ['Collect via Mystery, Jet Awards, or mode completions'],
+                    details: `Sources:
+- Mystery Award (50% chance)
+- 3× Jet Awards in one ball
+- Complete all 8 modes
+- Super Skill Shot (rare)
+- Wizard Mode completion`,
+                    value: 'Additional ball in play',
+                    maxProgress: 3,
+                    type: 'award'
+                },
+                {
+                    id: 'dinoawards',
+                    name: 'Dinosaur Awards',
+                    icon: '🏆',
+                    requirements: ['Complete Fossil collection', 'Available during modes'],
+                    details: `T-Rex Award: Start T-Rex Multiball
+Raptor Award: Light Raptor Mode  
+Velociraptor: Extra ball chance
+Triceratops: 2× scoring (20s)
+Brachiosaurus: Ball save (15s)
+Pteranodon: Light Mystery`,
+                    value: 'Special scoring & features',
+                    maxProgress: 6,
+                    type: 'award'
+                },
+                {
+                    id: 'highscores',
+                    name: 'High Score Awards',
+                    icon: '🥇',
+                    requirements: ['Reach score thresholds during game'],
+                    details: `1st: 100M - Extra Ball
+2nd: 250M - 2× Scoring (30s)
+3rd: 500M - Light Wizard Mode
+4th: 1B - Super Jets (1:00)
+5th: 2B - Final Battle Multiball`,
+                    value: 'Progressive game features',
+                    maxProgress: 5,
+                    type: 'award'
+                }
+            ]
+        };
+
+        let gameState = {
+            completedModes: [],
+            currentMode: null,
+            currentTab: 'modes',
+            shotProgress: {},
+            gimmickProgress: {},
+            multiballActive: false,
+            totalScore: 0,
+            activeMultiballs: 0
+        };
+
+        // Initialize game
+        function initGame() {
+            // Reset all progress
+            gameState = {
+                completedModes: [],
+                currentMode: null,
+                currentTab: 'modes',
+                shotProgress: {},
+                gimmickProgress: {},
+                multiballActive: false,
+                totalScore: 0,
+                activeMultiballs: 0
+            };
+            
+            // Initialize shot progress
+            gameData.majorModes.forEach(mode => {
+                mode.shots.forEach(shot => {
+                    gameState.shotProgress[`${mode.id}_${shot.name}`] = 0;
+                });
+            });
+            
+            // Initialize gimmick progress
+            [...gameData.multiballs, ...gameData.gimmicks, ...gameData.awards].forEach(item => {
+                gameState.gimmickProgress[item.id] = 0;
+            });
+            
+            updateModeSelector();
+            updateMultiballGrid();
+            updateGimmickGrid();
+            updateAwardsGrid();
+            updateGameStats();
+        }
+
+        // Tab switching
+        function switchTab(tab) {
+            gameState.currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tab).classList.add('active');
+            
+            // Update grids for current tab
+            if (tab === 'multiballs') updateMultiballGrid();
+            if (tab === 'gimmicks') updateGimmickGrid();
+            if (tab === 'awards') updateAwardsGrid();
+        }
+
+        // Update mode selector
+        function updateModeSelector() {
+            const selector = document.getElementById('modeSelector');
+            selector.innerHTML = '';
+
+            gameData.majorModes.forEach((mode, index) => {
+                const button = document.createElement('button');
+                button.className = 'mode-button';
+                
+                const isCompleted = gameState.completedModes.includes(mode.id);
+                const isWizard = mode.id === 'wizard';
+                const modeCount = gameState.completedModes.length;
+                
+                button.innerHTML = `
+                    <div class="mode-icon">${mode.icon}</div>
+                    <div class="mode-name">${mode.name}</div>
+                `;
+                
+                if (isWizard && modeCount < 8) {
+                    button.classList.add('locked');
+                    button.disabled = true;
+                    button.title = `Complete ${8 - modeCount} more modes`;
+                } else if (isCompleted) {
+                    button.classList.add('completed');
+                    button.onclick = () => viewMode(mode);
+                } else if (gameState.currentMode === mode.id) {
+                    button.classList.add('active');
+                    button.onclick = () => endMode(mode);
+                } else {
+                    button.classList.add('available');
+                    button.onclick = () => startMode(mode);
+                }
+                
+                selector.appendChild(button);
+            });
+        }
+
+        // Mode control functions
+        function startMode(mode) {
+            gameState.currentMode = mode.id;
+            if (mode.type === 'multiball') {
+                gameState.activeMultiballs++;
+                gameState.multiballActive = true;
+                showMultiballIndicator();
+            }
+            document.getElementById('modeInfo').innerHTML = createModeDisplay(mode);
+            updateModeSelector();
+            updateGameStats();
+            updateInteractiveShots(mode);
+        }
+
+        function endMode(mode) {
+            if (mode.type === 'multiball') {
+                gameState.activeMultiballs = Math.max(0, gameState.activeMultiballs - 1);
+                if (gameState.activeMultiballs === 0) {
+                    gameState.multiballActive = false;
+                    hideMultiballIndicator();
+                }
+            }
+            gameState.currentMode = null;
+            document.getElementById('modeInfo').innerHTML = '';
+            updateModeSelector();
+            updateGameStats();
+        }
+
+        function viewMode(mode) {
+            gameState.currentMode = mode.id;
+            document.getElementById('modeInfo').innerHTML = createModeDisplay(mode);
+            updateModeSelector();
+        }
+
+        // Create mode display
+        function createModeDisplay(mode) {
+            const isActive = gameState.currentMode === mode.id;
+            const isCompleted = gameState.completedModes.includes(mode.id);
+            const modeCount = gameState.completedModes.length;
+            
+            let html = `
+                <div class="mode-info active">
+                    <div class="mode-header">
+                        <div class="mode-title">
+                            <span class="dino-icon">${mode.icon}</span>
+                            <span>${mode.name}</span>
+                        </div>
+                        <div class="mode-status ${isActive ? 'status-active' : isCompleted ? 'status-completed' : 'status-qualifying'}">
+                            ${isActive ? 'ACTIVE' : isCompleted ? 'COMPLETED' : 'QUALIFYING'}
+                        </div>
+                    </div>
+                    
+                    <div class="requirements">
+                        <h3>🎯 Mode Requirements:</h3>
+                        <div class="requirements-list">`;
+
+            mode.requirements.forEach(req => {
+                const check = isCompleted ? '✅' : (isActive && modeCount >= gameData.majorModes.findIndex(m => m.id === mode.id)) ? '🔥' : '🔒';
+                html += `<div class="requirement"><span class="requirement-icon">${check}</span>${req}</div>`;
+            });
+
+            if (mode.multiball) {
+                html += `<div class="requirement"><span class="requirement-icon">⚡</span>Multiball: ${mode.multiball.balls} balls, ${formatPoints(mode.multiball.jackpot)} Jackpot</div>`;
+            }
+
+            html += `</div></div><div class="gimmick-grid">`;
+
+            mode.shots.forEach((shot, index) => {
+                const progressKey = `${mode.id}_${shot.name}`;
+                const currentProgress = gameState.shotProgress[progressKey] || 0;
+                const isShotCompleted = currentProgress >= shot.maxShots;
+                const progressPercent = (currentProgress / shot.maxShots) * 100;
+                const nextPoints = shot.points[Math.min(currentProgress, shot.points.length - 1)] || shot.points[shot.points.length - 1];
+                
+                html += `
+                    <div class="gimmick-card ${isShotCompleted ? 'completed' : (isActive && currentProgress > 0) ? 'active' : ''}" onclick="completeShot('${mode.id}', '${shot.name.replace(/\s+/g, '_')}')">
+                        <div class="gimmick-header">
+                            <span class="gimmick-name">${shot.name} ${shot.type === 'target' ? '🎯' : shot.type === 'ramp' ? '📈' : shot.type === 'loop' ? '🔄' : shot.type === 'bumper' ? '💥' : shot.type === 'orbit' ? '🌀' : shot.type === 'drop' ? '⬇️' : shot.type === 'standup' ? '📏' : shot.type === 'saucer' ? '🚀' : '⚡'}</span>
+                            <span>${currentProgress}/${shot.maxShots} ${isShotCompleted ? '✅' : ''}</span>
+                        </div>
+                        <div class="gimmick-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <span>${progressPercent.toFixed(0)}%</span>
+                        </div>
+                        <div class="gimmick-value">Next: ${formatPoints(nextPoints)}</div>
+                        <div class="gimmick-details">
+                            <strong>Type:</strong> ${shot.type.toUpperCase()}<br>
+                            <strong>Requirement:</strong> ${shot.maxShots} shots<br>
+                            ${isShotCompleted ? `<strong>Completed!</strong> ${shot.value}` : `<strong>Active:</strong> ${currentProgress > 0 ? 'In Progress' : 'Start Shooting!'}`}
+                        </div>
+                    </div>`;
+            });
+
+            html += `</div></div>`;
+            return html;
+        }
+
+        // Update multiball grid
+        function updateMultiballGrid() {
+            const grid = document.getElementById('multiballGrid');
+            grid.innerHTML = '';
+
+            gameData.multiballs.forEach(multiball => {
+                const progress = gameState.gimmickProgress[multiball.id] || 0;
+                const isCompleted = progress >= multiball.maxProgress;
+                const isActive = gameState.activeMultiballs > 0 && gameState.multiballActive;
+                
+                const card = document.createElement('div');
+                card.className = `gimmick-card ${isCompleted ? 'completed' : (isActive || progress > 0) ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="gimmick-header">
+                        <span class="gimmick-name">${multiball.icon} ${multiball.name}</span>
+                        <span>${progress}/${multiball.maxProgress} ${isCompleted ? '✅' : ''}</span>
+                    </div>
+                    <div class="gimmick-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(progress / multiball.maxProgress) * 100}%"></div>
+                        </div>
+                        <span>${((progress / multiball.maxProgress) * 100).toFixed(0)}%</span>
+                    </div>
+                    <div class="gimmick-value">${multiball.value}</div>
+                    <div class="gimmick-details">
+                        <strong>Requirements:</strong><br>
+                        ${multiball.requirements.map(req => `<div class="requirement ${progress > 0 ? 'completed' : ''}"><span class="requirement-icon">${progress > 0 ? '✅' : '🔒'}</span>${req}</div>`).join('')}
+                        <br><strong>Details:</strong> ${multiball.details}
+                    </div>
+                `;
+                card.onclick = () => activateMultiball(multiball);
+                grid.appendChild(card);
+            });
+        }
+
+        // Update gimmick grid
+        function updateGimmickGrid() {
+            const grid = document.getElementById('gimmickGrid');
+            grid.innerHTML = '';
+
+            gameData.gimmicks.forEach(gimmick => {
+                const progress = gameState.gimmickProgress[gimmick.id] || 0;
+                const isCompleted = progress >= gimmick.maxProgress;
+                
+                const card = document.createElement('div');
+                card.className = `gimmick-card ${isCompleted ? 'completed' : progress > 0 ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="gimmick-header">
+                        <span class="gimmick-name">${gimmick.icon} ${gimmick.name}</span>
+                        <span>${progress}/${gimmick.maxProgress} ${isCompleted ? '✅' : ''}</span>
+                    </div>
+                    <div class="gimmick-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(progress / gimmick.maxProgress) * 100}%"></div>
+                        </div>
+                        <span>${((progress / gimmick.maxProgress) * 100).toFixed(0)}%</span>
+                    </div>
+                    <div class="gimmick-value">${gimmick.value}</div>
+                    <div class="gimmick-details">${gimmick.details.replace(/\n/g, '<br>')}</div>
+                `;
+                card.onclick = () => progressGimmick(gimmick);
+                grid.appendChild(card);
+            });
+        }
+
+        // Update awards grid
+        function updateAwardsGrid() {
+            const grid = document.getElementById('awardsGrid');
+            grid.innerHTML = '';
+
+            gameData.awards.forEach(award => {
+                const progress = gameState.gimmickProgress[award.id] || 0;
+                const isCompleted = progress >= award.maxProgress;
+                
+                const card = document.createElement('div');
+                card.className = `gimmick-card ${isCompleted ? 'completed' : progress > 0 ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="gimmick-header">
+                        <span class="gimmick-name">${award.icon} ${award.name}</span>
+                        <span>${progress}/${award.maxProgress} ${isCompleted ? '✅' : ''}</span>
+                    </div>
+                    <div class="gimmick-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(progress / award.maxProgress) * 100}%"></div>
+                        </div>
+                        <span>${((progress / award.maxProgress) * 100).toFixed(0)}%</span>
+                    </div>
+                    <div class="gimmick-value">${award.value}</div>
+                    <div class="gimmick-details">${award.details.replace(/\n/g, '<br>')}</div>
+                `;
+                card.onclick = () => collectAward(award);
+                grid.appendChild(card);
+            });
+        }
+
+        // Shot completion
+        function completeShot(modeId, shotName) {
+            if (gameState.currentMode !== modeId) return;
+            
+            const mode = gameData.majorModes.find(m => m.id === modeId);
+            const shot = mode.shots.find(s => s.name === shotName.replace(/_/g, ' '));
+            const progressKey = `${modeId}_${shotName}`;
+            
+            const currentProgress = gameState.shotProgress[progressKey] || 0;
+            if (currentProgress < shot.maxShots) {
+                const nextProgress = currentProgress + 1;
+                gameState.shotProgress[progressKey] = nextProgress;
+                
+                // Add points to total
+                const points = shot.points[Math.min(currentProgress, shot.points.length - 1)] || shot.points[0];
+                gameState.totalScore += points;
+                
+                // Update display
+                document.getElementById('modeInfo').innerHTML = createModeDisplay(mode);
+                updateInteractiveShots(mode);
+                
+                // Check mode completion
+                const allShotsComplete = mode.shots.every(s => {
+                    const key = `${modeId}_${s.name.replace(/\s+/g, '_')}`;
+                    return (gameState.shotProgress[key] || 0) >= s.maxShots;
+                });
+                
+                if (allShotsComplete && !gameState.completedModes.includes(mode.id)) {
+                    completeMode(mode);
+                }
+                
+                updateGameStats();
+            }
+        }
+
+        // Make shots interactive
+        function updateInteractiveShots(mode) {
+            setTimeout(() => {
+                const shotCards = document.querySelectorAll('#modeInfo .gimmick-card');
+                shotCards.forEach(card => {
+                    card.style.cursor = gameState.currentMode === mode.id ? 'pointer' : 'default';
+                    card.title = gameState.currentMode === mode.id ? 'Click to complete shot' : '';
+                });
+            }, 100);
+        }
+
+        // Complete mode
+        function completeMode(mode) {
+            if (!gameState.completedModes.includes(mode.id)) {
+                gameState.completedModes.push(mode.id);
+                
+                // Award completion bonus
+                gameState.totalScore += 50000000; // 50M completion bonus
+                
+                // Wizard mode unlock
+                if (mode.id === 'wizard' && gameState.completedModes.length === 9) {
+                    alert('🎉 CONGRATULATIONS! You\'ve completed Jurassic Park Wizard Mode! 🦖🏆');
+                } else if (gameState.completedModes.length === 8 && !gameState.completedModes.includes('wizard')) {
+                    const wizardMode = gameData.majorModes.find(m => m.id === 'wizard');
+                    setTimeout(() => {
+                        if (confirm(`🎉 All 8 base modes completed! Start ${wizardMode.name}?`)) {
+                            startMode(wizardMode);
+                        }
+                    }, 1000);
+                }
+                
+                updateModeSelector();
+                updateGameStats();
+            }
+        }
+
+        // Gimmick functions
+        function progressGimmick(gimmick) {
+            const current = gameState.gimmickProgress[gimmick.id] || 0;
+            if (current < gimmick.maxProgress) {
+                gameState.gimmickProgress[gimmick.id] = current + 1;
+                gameState.totalScore += 25000000; // 25M for gimmick progress
+                updateGimmickGrid();
+                updateGameStats();
+            }
+        }
+
+        function activateMultiball(multiball) {
+            if (gameState.gimmickProgress[multiball.id] < multiball.maxProgress) {
+                gameState.gimmickProgress[multiball.id]++;
+                gameState.activeMultiballs++;
+                gameState.multiballActive = true;
+                gameState.totalScore += 75000000; // 75M multiball start bonus
+                showMultiballIndicator();
+                updateMultiballGrid();
+                updateGameStats();
+                setTimeout(() => {
+                    if (--gameState.activeMultiballs === 0) {
+                        gameState.multiballActive = false;
+                        hideMultiballIndicator();
+                    }
+                    updateGameStats();
+                }, 30000); // 30 second multiball
+            }
+        }
+
+        function collectAward(award) {
+            const current = gameState.gimmickProgress[award.id] || 0;
+            if (current < award.maxProgress) {
+                gameState.gimmickProgress[award.id] = current + 1;
+                gameState.totalScore += 10000000; // 10M award bonus
+                updateAwardsGrid();
+                updateGameStats();
+            }
+        }
+
+        // Control functions
+        function resetGame() {
+            if (confirm('Reset ALL progress? This cannot be undone.')) {
+                initGame();
+                document.getElementById('modeInfo').innerHTML = '';
+                hideMultiballIndicator();
+            }
+        }
+
+        function completeCurrentSection() {
+            const currentTab = gameState.currentTab;
+            if (currentTab === 'modes' && gameState.currentMode) {
+                const mode = gameData.majorModes.find(m => m.id === gameState.currentMode);
+                if (mode && confirm(`Complete all shots in ${mode.name}?`)) {
+                    mode.shots.forEach(shot => {
+                        const key = `${mode.id}_${shot.name.replace(/\s+/g, '_')}`;
+                        gameState.shotProgress[key] = shot.maxShots;
+                        for (let i = 0; i < shot.maxShots; i++) {
+                            gameState.totalScore += shot.points[Math.min(i, shot.points.length - 1)] || shot.points[0];
+                        }
+                    });
+                    completeMode(mode);
+                    document.getElementById('modeInfo').innerHTML = createModeDisplay(mode);
+                    updateGameStats();
+                }
+            } else if (confirm(`Complete all ${currentTab === 'multiballs' ? 'multiballs' : currentTab === 'gimmicks' ? 'gimmicks' : 'awards'}?`)) {
+                const items = currentTab === 'multiballs' ? gameData.multiballs : 
+                             currentTab === 'gimmicks' ? gameData.gimmicks : gameData.awards;
+                items.forEach(item => {
+                    gameState.gimmickProgress[item.id] = item.maxProgress;
+                    gameState.totalScore += item.maxProgress * 25000000;
+                });
+                if (currentTab === 'multiballs') {
+                    gameState.activeMultiballs = gameData.multiballs.length;
+                    gameState.multiballActive = true;
+                    showMultiballIndicator();
+                }
+                updateMultiballGrid();
+                updateGimmickGrid();
+                updateAwardsGrid();
+                updateGameStats();
+            }
+        }
+
+        function startRandomMultiball() {
+            const availableMultiballs = gameData.multiballs.filter(mb => 
+                gameState.gimmickProgress[mb.id] < mb.maxProgress
+            );
+            if (availableMultiballs.length > 0) {
+                const randomMultiball = availableMultiballs[Math.floor(Math.random() * availableMultiballs.length)];
+                activateMultiball(randomMultiball);
+            } else {
+                alert('No multiballs available! Complete some requirements first.');
+            }
+        }
+
+        // UI updates
+        function updateGameStats() {
+            const totalShots = gameData.majorModes.reduce((total, mode) => {
+                return total + mode.shots.reduce((sum, shot) => sum + shot.maxShots, 0);
+            }, 0);
+            
+            const completedShots = Object.values(gameState.shotProgress).reduce((sum, progress) => sum + progress, 0);
+            const progressPercent = totalShots > 0 ? (completedShots / totalShots) * 100 : 0;
+            
+            document.getElementById('totalProgress').textContent = progressPercent.toFixed(1) + '%';
+            document.getElementById('activeMultiballs').textContent = gameState.activeMultiballs;
+            document.getElementById('completedModes').textContent = `${gameState.completedModes.length}/9`;
+            document.getElementById('totalScore').textContent = formatPoints(gameState.totalScore);
+        }
+
+        function showMultiballIndicator() {
+            document.getElementById('multiballIndicator').style.display = 'block';
+        }
+
+        function hideMultiballIndicator() {
+            document.getElementById('multiballIndicator').style.display = 'none';
+        }
+
+        function formatPoints(points) {
+            if (points >= 1000000000) return (points / 1000000000).toFixed(1) + 'B';
+            if (points >= 1000000) return (points / 1000000).toFixed(0) + 'M';
+            return points.toLocaleString();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initGame();
+            
+            // Tab switching event listeners
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    switchTab(this.textContent.trim().split(' ')[1].toLowerCase());
+                });
+            });
+        });
+    </script>
+</body>
+</html>
