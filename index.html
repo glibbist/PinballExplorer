@@ -457,12 +457,12 @@
         <h1>🦕 Jurassic Park Pinball Complete Explorer</h1>
         
         <div class="header-info">
-            <h2>Complete Game Structure Explorer</h2>
-            <p>Track all modes, multiballs, and gimmicks with interactive progress tracking</p>
+            <h2>Complete Game Structure Explorer (Premium Edition)</h2>
+            <p>Track all paddock modes, multiballs, control room tasks, and features with interactive progress tracking. Updated based on actual gameplay mechanics: Collect 6 dinosaurs via paddocks, progress to Visitor's Center, unlock multiballs and wizard modes.</p>
         </div>
 
         <div class="tabs">
-            <button class="tab-button active" onclick="switchTab('modes')">🦖 Major Modes</button>
+            <button class="tab-button active" onclick="switchTab('modes')">🦖 Paddock Modes (Dinosaurs)</button>
             <button class="tab-button" onclick="switchTab('multiballs')">⚡ Multiballs</button>
             <button class="tab-button" onclick="switchTab('gimmicks')">🎯 Gimmicks & Features</button>
             <button class="tab-button" onclick="switchTab('awards')">🏆 Awards & Collectibles</button>
@@ -481,8 +481,8 @@
                         <span class="stat-label">Active Multiballs</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" id="completedModes">0/9</span>
-                        <span class="stat-label">Modes Completed</span>
+                        <span class="stat-number" id="completedModes">0/6</span>
+                        <span class="stat-label">Dinosaurs Captured</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number" id="totalScore">0</span>
@@ -494,7 +494,7 @@
             <div class="game-state">
                 <div class="section-header">
                     <span class="section-icon">🎮</span>
-                    <h2 class="section-title">Major Game Modes</h2>
+                    <h2 class="section-title">Paddock Dinosaur Modes</h2>
                 </div>
                 <div class="mode-selector" id="modeSelector"></div>
             </div>
@@ -544,344 +544,299 @@
     </div>
 
     <script>
-        // Complete Jurassic Park Pinball game data structure
+        // Updated Jurassic Park Pinball (Premium) game data based on transcript
         const gameData = {
-            majorModes: [
+            majorModes: [  // Paddock Dinosaur Capture Modes (6 total to reach Visitor's Center)
+                {
+                    id: 'trex',
+                    name: 'T-Rex Paddock',
+                    icon: '🦖',
+                    type: 'paddock',
+                    requirements: [
+                        'Spell T-R-E-X via white shots and left ramp',
+                        'Set traps with yellow targets (rescue staff first)',
+                        'Hit lit green shots to track, tranquilize with T-Rex shot',
+                        'Shoot both yellow trap targets to capture (EB + multiplier on success)'
+                    ],
+                    shots: [
+                        { name: 'White Shots (Rescues)', value: 'Build staff + 10M+ streak', maxShots: 5, points: [5000000, 10000000, 15000000, 20000000, 25000000], type: 'target' },
+                        { name: 'Yellow Trap Targets', value: '15M → 75M', maxShots: 2, points: [15000000, 75000000], type: 'target' },
+                        { name: 'T-Rex Tranquilize', value: '20M pause', maxShots: 3, points: [20000000], type: 'ramp' },
+                        { name: 'Helipad Feed', value: '8M per hit', maxShots: 4, points: [8000000], type: 'playfield' }
+                    ],
+                    multiball: { balls: 2, jackpot: '30M', superJackpot: '60M' }  // Mini multiball during feed
+                },
+                {
+                    id: 'spitter',
+                    name: 'Spitter Paddock',
+                    icon: '🦎',
+                    type: 'paddock',
+                    requirements: [
+                        'Shoot white shots to light left ramp spinner',
+                        'Rescue staff to set traps (yellow targets)',
+                        'Track with green shots, capture via right ramp',
+                        'Switch truck direction for side preference'
+                    ],
+                    shots: [
+                        { name: 'Left Ramp Spinner', value: '10M → 50M', maxShots: 3, points: [10000000, 30000000, 50000000], type: 'ramp' },
+                        { name: 'Rescue Targets', value: '12M each', maxShots: 6, points: [12000000], type: 'target' },
+                        { name: 'Right Ramp Capture', value: '25M', maxShots: 2, points: [25000000], type: 'ramp' },
+                        { name: 'Truck Switch', value: '5M shift', maxShots: 3, points: [5000000], type: 'target' }
+                    ]
+                },
+                {
+                    id: 'triceratops',
+                    name: 'Triceratops Paddock',
+                    icon: '🦕',
+                    type: 'paddock',
+                    requirements: [
+                        'Activate via truck choice and white shots',
+                        'Build rescues for traps, hit both yellow targets',
+                        'Tranquilize to pause dino movement',
+                        'Capture for Jurassic Perk (e.g., 2x bonus)'
+                    ],
+                    shots: [
+                        { name: 'White Shots', value: '8M → 40M', maxShots: 4, points: [8000000, 20000000, 30000000, 40000000], type: 'target' },
+                        { name: 'Yellow Traps', value: '15M each', maxShots: 2, points: [15000000], type: 'target' },
+                        { name: 'Dino Track Shots', value: '18M', maxShots: 5, points: [18000000], type: 'combo' },
+                        { name: 'Bumpers (Advance)', value: '6M per hit', maxShots: 10, points: [6000000], type: 'bumper' }
+                    ]
+                },
+                {
+                    id: 'pteranodon',
+                    name: 'Pteranodon Attack',
+                    icon: '🦅',
+                    type: 'paddock',
+                    requirements: [
+                        'Hit switches/bumpers to build multiplier (up to 15x)',
+                        'Shoot right ramp to collect value',
+                        'Rescues continue post-capture for double value',
+                        'Awards: 2x jackpots in Chaos MB'
+                    ],
+                    shots: [
+                        { name: 'Switches/Bumpers', value: 'Build 15x', maxShots: 10, points: [5000000], type: 'switch' },
+                        { name: 'Right Ramp Collect', value: '20M → 100M (multiplied)', maxShots: 3, points: [20000000, 60000000, 100000000], type: 'ramp' },
+                        { name: 'Rescue Loop', value: '12M streak', maxShots: 4, points: [12000000], type: 'loop' },
+                        { name: 'Helipad', value: '10M', maxShots: 2, points: [10000000], type: 'playfield' }
+                    ]
+                },
+                {
+                    id: 'raptor',
+                    name: 'Raptor Pit',
+                    icon: '🦖',
+                    type: 'paddock',
+                    requirements: [
+                        'Shoot left orbit to cage, damage fence with targets',
+                        'Release raptors, spell C-H-A-O-S for Tri-Ball',
+                        'Jackpots on ramps, then chaos letters (values increase)',
+                        'Clear paddock for EB chance'
+                    ],
+                    shots: [
+                        { name: 'Raptor Cage', value: '15M → 75M', maxShots: 3, points: [15000000, 45000000, 75000000], type: 'orbit' },
+                        { name: 'Fence Targets', value: '10M each', maxShots: 6, points: [10000000], type: 'target' },
+                        { name: 'Chaos Letters', value: '20M+ per letter', maxShots: 5, points: [20000000], type: 'letter' },
+                        { name: 'Raptor Pit', value: '25M', maxShots: 2, points: [25000000], type: 'pit' }
+                    ],
+                    multiball: { balls: 3, jackpot: '25M', superJackpot: '50M+' }
+                },
+                {
+                    id: 'spinosaurus',
+                    name: 'Spinosaurus Paddock',
+                    icon: '🦕',
+                    type: 'paddock',
+                    requirements: [
+                        'Truck to side wall path for easier access',
+                        'White shots to activate, traps via rescues',
+                        'Capture both yellows, unlock King of the Island MB',
+                        'Perk: +8s on timers'
+                    ],
+                    shots: [
+                        { name: 'Side Wall Shots', value: '16M → 80M', maxShots: 4, points: [16000000, 40000000, 60000000, 80000000], type: 'ramp' },
+                        { name: 'Yellow Traps', value: '18M each', maxShots: 2, points: [18000000], type: 'target' },
+                        { name: 'Dino Track', value: '22M', maxShots: 3, points: [22000000], type: 'combo' },
+                        { name: 'Supply Targets', value: '9M', maxShots: 5, points: [9000000], type: 'target' }
+                    ]
+                },
+                {
+                    id: 'visitors',
+                    name: "Visitor's Center (Wizard Unlock)",
+                    icon: '🏛️',
+                    type: 'wizard',
+                    requirements: [
+                        'Spell M-A-P via white shots (helipad, left ramp, etc.) after 6 dinosaurs',
+                        'Multiball: Make lit shots (move rightward, side ramps)',
+                        'Max rescues/streaks for bonus (x times captures)',
+                        'Unlocks Museum Mayhem / Escape Nublar'
+                    ],
+                    shots: [
+                        { name: 'Lit Shots (Moving)', value: '30M+ per level', maxShots: 6, points: [30000000], type: 'moving' },
+                        { name: 'Raptor Pit (Left)', value: '40M', maxShots: 3, points: [40000000], type: 'pit' },
+                        { name: 'Side Ramp Setup', value: '50M jackpot', maxShots: 4, points: [50000000], type: 'ramp' },
+                        { name: 'Rescue Streaks', value: '25M x streak', maxShots: 10, points: [25000000], type: 'streak' }
+                    ],
+                    multiball: { balls: 2, jackpot: '50M', superJackpot: '100M', duration: 'Until shots complete' }
+                }
+            ],
+
+            multiballs: [  // Key multiballs from transcript
+                {
+                    id: 'chaos',
+                    name: 'Chaos Multiball',
+                    icon: '🔥',
+                    requirements: ['Spell C-H-A-O-S (targets across PF, 2x for advanced)', 'Truck direction sets left/right jackpots'],
+                    details: 'Jackpots build value (shoot red), then Super (after 1-3 jackpots). Continue jackpots post-super. 2x/3x phases. Finish letters for extra jackpot + EB chance.',
+                    value: 'Jackpots 10M+ → Super 20M+ → Grand 50M+',
+                    maxProgress: 2,  // Basic + Advanced
+                    type: 'multiball'
+                },
                 {
                     id: 'trex',
                     name: 'T-Rex Multiball',
                     icon: '🦖',
-                    type: 'multiball',
-                    requirements: [
-                        '3× T-Rex World targets',
-                        '2× T-Rex awards from Fossil side targets',
-                        '25M points in single ball play'
-                    ],
-                    shots: [
-                        { name: 'T-Rex World', value: '10M → 50M', maxShots: 3, points: [10000000, 25000000, 50000000], type: 'target' },
-                        { name: 'Left Ramp', value: '15M', maxShots: 5, points: [15000000], type: 'ramp' },
-                        { name: 'Right Ramp', value: '20M', maxShots: 4, points: [20000000], type: 'ramp' },
-                        { name: 'Pop Bumpers', value: '5M per hit', maxShots: 10, points: [5000000], type: 'bumper' }
-                    ],
-                    multiball: { balls: 3, jackpot: '50M', superJackpot: '100M' }
+                    requirements: ['Spell T-R-E-X, feed left ramp (T-Rex eats ball)', 'Capture via traps/smart missile for EB'],
+                    details: 'Mini 2-ball. Jackpots on lit shots, supers build. Perks: 2x bonus, super spinner. Dodge attacks with orange shots.',
+                    value: '30M Jackpots, 60M Supers, EB on capture',
+                    maxProgress: 1,
+                    type: 'multiball'
                 },
                 {
                     id: 'raptor',
-                    name: 'Raptor Rampage',
+                    name: 'Raptor Tri-Ball',
                     icon: '🦅',
-                    type: 'mode',
-                    requirements: [
-                        '2× Raptor Pen (3× left orbit)',
-                        '3× Raptor targets',
-                        'Collect Raptor Hurry Up (25M)'
-                    ],
-                    shots: [
-                        { name: 'Raptor Pen', value: '8M → 40M', maxShots: 3, points: [8000000, 24000000, 40000000], type: 'orbit' },
-                        { name: 'Raptor Targets', value: '12M each', maxShots: 6, points: [12000000], type: 'target' },
-                        { name: 'Center Ramp', value: '18M', maxShots: 4, points: [18000000], type: 'ramp' },
-                        { name: 'Drop Targets', value: '6M each', maxShots: 3, points: [6000000], type: 'drop' }
-                    ]
+                    requirements: ['Damage fence in Raptor Pit, release raptors', 'Jackpots on left/right ramps, then chaos letters'],
+                    details: '3-ball. Letters worth jackpot value (O highest). Finish for extra balls in play (like original JP). Continue rescues.',
+                    value: '25M Jackpots, 50M+ letter values',
+                    maxProgress: 1,
+                    type: 'multiball'
                 },
                 {
-                    id: 'kitchen',
-                    name: 'Kitchen Chaos',
-                    icon: '🍳',
-                    type: 'mode',
-                    requirements: [
-                        '3× Kitchen Entrance (right orbit)',
-                        'Hit all 3 Kitchen standups',
-                        'Collect Kitchen Hurry Up (30M)'
-                    ],
-                    shots: [
-                        { name: 'Kitchen Entrance', value: '15M → 75M', maxShots: 4, points: [15000000, 35000000, 55000000, 75000000], type: 'orbit' },
-                        { name: 'Kitchen Standups', value: '10M each', maxShots: 8, points: [10000000], type: 'standup' },
-                        { name: 'Left Loop', value: '25M', maxShots: 3, points: [25000000], type: 'loop' },
-                        { name: 'Right Loop', value: '20M', maxShots: 3, points: [20000000], type: 'loop' }
-                    ]
-                },
-                {
-                    id: 'embassy',
-                    name: 'Siege at the Embassy',
+                    id: 'visitors',
+                    name "Visitor's Center Multiball",
                     icon: '🏛️',
-                    type: 'mode',
-                    requirements: [
-                        '3× Embassy Saucer shots',
-                        'Complete all 4 Siege levels',
-                        'Collect 3× Siege Hurry Ups'
-                    ],
-                    shots: [
-                        { name: 'Embassy Saucer', value: '30M → 120M', maxShots: 4, points: [30000000, 60000000, 90000000, 120000000], type: 'saucer' },
-                        { name: 'Siege Targets', value: '15M each', maxShots: 6, points: [15000000], type: 'target' },
-                        { name: 'Upper Playfield', value: '40M', maxShots: 3, points: [40000000], type: 'playfield' },
-                        { name: 'Flipper Triggers', value: '8M each', maxShots: 4, points: [8000000], type: 'trigger' }
-                    ]
+                    requirements: ['Spell MAP after 6 dinosaurs', 'Make moving lit shots (progress right, side ramps difficult)'],
+                    details: '2-ball. Shots advance levels but timeout left if missed. Bonus: Rescues x captures. Unlocks wizard modes (Museum Mayhem, etc.).',
+                    value: '30M+ per shot, escalating to 100M+',
+                    maxProgress: 1,
+                    type: 'multiball'
                 },
                 {
-                    id: 'hatchery',
-                    name: 'Hatchery Heist',
-                    icon: '🥚',
-                    type: 'mode',
-                    requirements: [
-                        '2× Hatchery shots (left ramp)',
-                        'Collect 2× Hatchery awards',
-                        '25M points during qualification'
-                    ],
-                    shots: [
-                        { name: 'Hatchery Ramp', value: '12M → 60M', maxShots: 4, points: [12000000, 30000000, 45000000, 60000000], type: 'ramp' },
-                        { name: 'Egg Targets', value: '10M each', maxShots: 5, points: [10000000], type: 'target' },
-                        { name: 'Dinosaur Fossils', value: '18M', maxShots: 3, points: [18000000], type: 'target' },
-                        { name: 'Bumper Hits', value: '6M each', maxShots: 8, points: [6000000], type: 'bumper' }
-                    ]
+                    id: 'king',
+                    name: 'King of the Island (Wizard)',
+                    icon: '👑',
+                    requirements: ['Capture Spinosaurus + all prior', 'Complete Visitor\'s Center'],
+                    details: 'High-scoring MB with all features. Leads to final wizards: When Dinosaurs Rule the Earth.',
+                    value: '100M+ Jackpots, 250M Supers',
+                    maxProgress: 1,
+                    type: 'multiball'
+                }
+            ],
+
+            gimmicks: [  // Features like skill shots, control room, supply drops
+                {
+                    id: 'skillshot',
+                    name: 'Skill Shots',
+                    icon: '🎯',
+                    requirements: ['Plunge to lit lane at ball start', 'Short plunge for quick shots'],
+                    details: `Main: Left Ramp → Right Ramp → Side Ramp combo (15M+).
+Other: Amber target, right loop, helipad feed.
+Super: Quick plunger (10M + light ramps/Mystery).`,
+                    value: '2M-15M+ combos + lane lights',
+                    maxProgress: 4,  // Basic, combo, super, advanced
+                    type: 'skillshot'
                 },
                 {
                     id: 'supply',
-                    name: 'Supply Drop',
+                    name: 'Supply Drops',
                     icon: '📦',
-                    type: 'mode',
-                    requirements: [
-                        '3× Supply Drop shots (right ramp)',
-                        'Hit all 3 Supply targets',
-                        'Collect Supply Hurry Up (35M)'
-                    ],
-                    shots: [
-                        { name: 'Supply Drop', value: '20M → 80M', maxShots: 3, points: [20000000, 50000000, 80000000], type: 'ramp' },
-                        { name: 'Supply Targets', value: '14M each', maxShots: 6, points: [14000000], type: 'target' },
-                        { name: 'Left Ramp', value: '22M', maxShots: 4, points: [22000000], type: 'ramp' },
-                        { name: 'Standup Targets', value: '9M each', maxShots: 5, points: [9000000], type: 'standup' }
-                    ]
-                },
-                {
-                    id: 'river',
-                    name: 'River Chase',
-                    icon: '🚤',
-                    type: 'mode',
-                    requirements: [
-                        '3× River Chase shots (left orbit)',
-                        'Complete River sequence',
-                        'Collect River Hurry Up (28M)'
-                    ],
-                    shots: [
-                        { name: 'River Chase', value: '16M → 64M', maxShots: 4, points: [16000000, 38000000, 52000000, 64000000], type: 'orbit' },
-                        { name: 'River Targets', value: '13M each', maxShots: 5, points: [13000000], type: 'target' },
-                        { name: 'Center Loop', value: '24M', maxShots: 3, points: [24000000], type: 'loop' },
-                        { name: 'Drop Targets', value: '7M each', maxShots: 4, points: [7000000], type: 'drop' }
-                    ]
-                },
-                {
-                    id: 'maintenance',
-                    name: 'Maintenance Facility',
-                    icon: '🔧',
-                    type: 'mode',
-                    requirements: [
-                        '2× Maintenance shots (center ramp)',
-                        'Hit all Maintenance targets',
-                        '25M points during qualification'
-                    ],
-                    shots: [
-                        { name: 'Maintenance Ramp', value: '18M → 72M', maxShots: 3, points: [18000000, 45000000, 72000000], type: 'ramp' },
-                        { name: 'Maintenance Targets', value: '11M each', maxShots: 6, points: [11000000], type: 'target' },
-                        { name: 'Right Loop', value: '26M', maxShots: 3, points: [26000000], type: 'loop' },
-                        { name: 'Bumpers', value: '5M each', maxShots: 10, points: [5000000], type: 'bumper' }
-                    ]
-                },
-                {
-                    id: 'wizard',
-                    name: 'Jurassic Park Rampage (Wizard)',
-                    icon: '⚡',
-                    type: 'wizard',
-                    requirements: [
-                        'Complete all 8 base modes',
-                        'Start T-Rex Multiball',
-                        '500M+ total points',
-                        'All dinosaur fossils collected'
-                    ],
-                    shots: [
-                        { name: 'All Major Shots', value: '100M+', maxShots: 8, points: [100000000], type: 'combo' },
-                        { name: 'Super Jets', value: '50M per hit', maxShots: 20, points: [50000000], type: 'bumper' },
-                        { name: 'Mega Jackpot', value: '200M+', maxShots: 6, points: [200000000], type: 'jackpot' },
-                        { name: 'Dinosaur Awards', value: '75M each', maxShots: 4, points: [75000000], type: 'award' }
-                    ],
-                    multiball: { balls: 5, jackpot: '100M', superJackpot: '250M', duration: '4:00' }
-                }
-            ],
-
-            multiballs: [
-                {
-                    id: 'mystery',
-                    name: 'Mystery Multiball',
-                    icon: '❓',
-                    requirements: ['Collect 3× Mystery awards', '25M points during qualification'],
-                    details: '2-ball multiball with mystery awards (Extra Ball, 2× scoring, etc.)',
-                    value: 'Random mystery award',
-                    maxProgress: 1,
-                    type: 'multiball'
-                },
-                {
-                    id: 'dino',
-                    name: 'Dinosaur Multiball',
-                    icon: '🦕',
-                    requirements: ['Complete all 6 Dinosaur Fossil shots', 'Start during single ball'],
-                    details: '3-ball multiball with dinosaur jackpot shots',
-                    value: '25M Jackpot, 50M Super Jackpot',
-                    maxProgress: 1,
-                    type: 'multiball'
-                },
-                {
-                    id: 'super',
-                    name: 'Super Dinosaur Multiball',
-                    icon: '🦖',
-                    requirements: ['Complete T-Rex Multiball', 'Hit 3× Super Jets during T-Rex'],
-                    details: '4-ball multiball with super jets and double jackpots',
-                    value: '50M Jackpot, 100M Super Jackpot',
-                    maxProgress: 1,
-                    type: 'multiball'
-                },
-                {
-                    id: 'final',
-                    name: 'Final Battle Multiball',
-                    icon: '⚔️',
-                    requirements: ['Complete Wizard Mode', 'Start final T-Rex battle'],
-                    details: '5-ball multiball with escalating jackpots',
-                    value: '100M+ Jackpot, 250M+ Super Jackpot',
-                    maxProgress: 1,
-                    type: 'multiball'
-                }
-            ],
-
-            gimmicks: [
-                {
-                    id: 'hurryup',
-                    name: 'Hurry-Up Modes',
-                    icon: '⏱️',
-                    requirements: ['Available after qualifying shots', 'Collect within time limit'],
-                    details: `T-Rex Hurry Up: 25M (T-Rex target)
-Raptor Hurry Up: 25M (Raptor pen)
-Kitchen Hurry Up: 30M (Kitchen entrance)
-Embassy Hurry Up: 35M (Embassy saucer)
-Supply Hurry Up: 35M (Supply drop)`,
-                    value: '25M-35M per hurry-up',
-                    maxProgress: 5,
+                    requirements: ['Hit 3 blue targets around PF (some overlap traps)', 'Lights 2x scoring on right'],
+                    details: `Random awards: Chaos letter, 2x scoring, Jurassic Perk.
+Targets: Raptor gate, trap sets. Builds amber value for big awards.`,
+                    value: '10M-35M + 2x scoring lit',
+                    maxProgress: 3,
                     type: 'gimmick'
+                },
+                {
+                    id: 'perks',
+                    name: 'Jurassic Perks',
+                    icon: '⭐',
+                    requirements: ['Earn from dinosaur captures', 'Track on left side'],
+                    details: `Examples: 2x/3x bonus (from hard dinos), super spinner (+2x), +200k combos, +8s timers (T-Rex), 15k/bumper.
+Only bonus multipliers in game. Builds wizard value via rescues.`,
+                    value: 'Multipliers + scoring boosts',
+                    maxProgress: 6,
+                    type: 'perk'
+                },
+                {
+                    id: 'controlroom',
+                    name: 'Control Room Tasks',
+                    icon: '💻',
+                    requirements: ['Shoot control room saucer (lit after modes/awards)', 'Choose: System Boot, Restore Power, Virus Attack, Secure Control Room'],
+                    details: `System Boot: Blue arrow + combo (huge points).
+Restore Power: Spinner builds value, collect blue arrows.
+Virus Attack: Frenzy every shot.
+Secure Control Room: Blue shots collect, remake green to extend (+5s, build value).`,
+                    value: '20M-100M+ per task, +fossils',
+                    maxProgress: 4,  // 4 tasks
+                    type: 'mode'
+                },
+                {
+                    id: 'rescues',
+                    name: 'Staff Rescues & Traps',
+                    icon: '👥',
+                    requirements: ['Shoot lit rescue targets (white shots)', 'Build streak without captures/dino hits'],
+                    details: `Lights yellow trap targets. Hit traps to set, then capture yellow dino.
+Post-capture: Continue rescues for double paddock value. Streak pads Visitor\'s Center bonus.`,
+                    value: 'Increasing 5M-25M per rescue + streaks',
+                    maxProgress: 10,  // Max streak
+                    type: 'streak'
+                },
+                {
+                    id: 'amber',
+                    name: 'Amber Collection',
+                    icon: '💎',
+                    requirements: ['Shoot amber target repeatedly', 'Grows throughout game'],
+                    details: `High value leads to awards: EB, 2x scoring, light extras.
+Collect via mystery/smart missile. Ties to fossils/wizards.`,
+                    value: '25M+ points + random awards',
+                    maxProgress: 3,
+                    type: 'collectible'
+                }
+            ],
+
+            awards: [  // Extra balls, fossils, wizard unlocks
+                {
+                    id: 'extraball',
+                    name: 'Extra Balls',
+                    icon: '⚪',
+                    requirements: ['Via T-Rex capture, Raptor finish, Supply/Mystery, high rescues', 'Spell Chaos letters'],
+                    details: `Sources: T-Rex trap (smart missile), Raptor Tri-Ball complete, large tower shots, Control Room secures, high amber.
+Also: 50% mystery chance, wizard completions.`,
+                    value: 'Additional ball + ball save',
+                    maxProgress: 4,
+                    type: 'award'
                 },
                 {
                     id: 'fossils',
                     name: 'Dinosaur Fossils',
                     icon: '🦴',
-                    requirements: ['Hit Fossil side targets 6 times', 'Each fossil requires specific shots'],
-                    details: `1. Triceratops: 3× left ramp
-2. Stegosaurus: 3× right ramp
-3. Velociraptor: 3× left orbit
-4. Brachiosaurus: 3× right orbit
-5. Pteranodon: 3× center ramp
-6. T-Rex: 3× T-Rex targets`,
-                    value: 'Each fossil = 20M + mode start',
+                    requirements: ['Earn from Control Room tasks/Paddock captures', '3 fossils unlock wizards'],
+                    details: `Right 3 fossils for wizard modes: Museum Mayhem (T-Rex modes), Escape Nublar (all 3), When Dinosaurs Rule the Earth (win all).
+Left: Perks/progress.`,
+                    value: '20M each + wizard lights',
                     maxProgress: 6,
                     type: 'collectible'
                 },
                 {
-                    id: 'jets',
-                    name: 'Jet Awards',
-                    icon: '✈️',
-                    requirements: ['Hit pop bumpers 100 times total', 'Collect during single ball'],
-                    details: `Jet Awards cycle through:
-1. 2× Scoring (10s)
-2. Extra Ball
-3. 1M per bumper hit (20s)
-4. Ball Save (10s)
-5. 3× Scoring (15s)
-6. Add-a-Ball`,
-                    value: 'Progressive bumper multipliers',
-                    maxProgress: 6,
-                    type: 'award'
-                },
-                {
-                    id: 'mystery',
-                    name: 'Mystery Awards',
-                    icon: '🎁',
-                    requirements: ['Hit Mystery saucer 3 times', 'Available every ball'],
-                    details: `Random mystery awards:
-- Extra Ball (50% chance)
-- 2× Scoring (20s)
-- Light Extra Ball
-- 25M Points
-- Ball Saver (15s)
-- Advance mode progress`,
-                    value: 'Random valuable award',
+                    id: 'wizards',
+                    name: 'Wizard Modes',
+                    icon: '⚡',
+                    requirements: ['Complete 6 dinosaurs → Visitor\'s Center MB', 'All fossils + captures for finals'],
+                    details: `Museum Mayhem: All T-Rex modes.
+Escape Nublar: All 3 centers.
+When Dinosaurs Rule the Earth: Win all (super high scores, MBs).`,
+                    value: '100M-1B+ + game completion',
                     maxProgress: 3,
-                    type: 'gimmick'
-                },
-                {
-                    id: 'skillshot',
-                    name: 'Skill Shot',
-                    icon: '🎯',
-                    requirements: ['Plunge ball to lit lane', 'Available at ball start'],
-                    details: `Left lane: 2M + light left ramp
-Right lane: 2M + light right ramp
-Center lane: 3M + light Mystery
-Super Skill Shot: 10M (quick plunger)`,
-                    value: '2M-10M + lane lighting',
-                    maxProgress: 1,
-                    type: 'skillshot'
-                },
-                {
-                    id: 'combos',
-                    name: 'Shot Combos',
-                    icon: '🔥',
-                    requirements: ['Complete shot sequences quickly', 'Lights advance with each combo'],
-                    details: `Basic Combo: Left Ramp → Right Ramp (15M)
-Loop Combo: Left Loop → Right Loop (30M)
-Ramp Combo: Left Ramp → Center → Right Ramp (40M)
-Super Combo: All 6 major shots (75M)`,
-                    value: '15M-75M per combo',
-                    maxProgress: 4,
-                    type: 'combo'
-                }
-            ],
-
-            awards: [
-                {
-                    id: 'extraball',
-                    name: 'Extra Balls',
-                    icon: '⚪',
-                    requirements: ['Collect via Mystery, Jet Awards, or mode completions'],
-                    details: `Sources:
-- Mystery Award (50% chance)
-- 3× Jet Awards in one ball
-- Complete all 8 modes
-- Super Skill Shot (rare)
-- Wizard Mode completion`,
-                    value: 'Additional ball in play',
-                    maxProgress: 3,
-                    type: 'award'
-                },
-                {
-                    id: 'dinoawards',
-                    name: 'Dinosaur Awards',
-                    icon: '🏆',
-                    requirements: ['Complete Fossil collection', 'Available during modes'],
-                    details: `T-Rex Award: Start T-Rex Multiball
-Raptor Award: Light Raptor Mode  
-Velociraptor: Extra ball chance
-Triceratops: 2× scoring (20s)
-Brachiosaurus: Ball save (15s)
-Pteranodon: Light Mystery`,
-                    value: 'Special scoring & features',
-                    maxProgress: 6,
-                    type: 'award'
-                },
-                {
-                    id: 'highscores',
-                    name: 'High Score Awards',
-                    icon: '🥇',
-                    requirements: ['Reach score thresholds during game'],
-                    details: `1st: 100M - Extra Ball
-2nd: 250M - 2× Scoring (30s)
-3rd: 500M - Light Wizard Mode
-4th: 1B - Super Jets (1:00)
-5th: 2B - Final Battle Multiball`,
-                    value: 'Progressive game features',
-                    maxProgress: 5,
-                    type: 'award'
+                    type: 'wizard'
                 }
             ]
         };
@@ -952,17 +907,17 @@ Pteranodon: Light Mystery`,
             if (tab === 'awards') updateAwardsGrid();
         }
 
-        // Update mode selector
+        // Update mode selector (now for 6 paddocks + wizard)
         function updateModeSelector() {
             const selector = document.getElementById('modeSelector');
             selector.innerHTML = '';
 
-            gameData.majorModes.forEach((mode, index) => {
+            gameData.majorModes.slice(0, 6).forEach((mode, index) => {  // Show only 6 base paddocks
                 const button = document.createElement('button');
                 button.className = 'mode-button';
                 
                 const isCompleted = gameState.completedModes.includes(mode.id);
-                const isWizard = mode.id === 'wizard';
+                const isWizard = mode.id === 'visitors';
                 const modeCount = gameState.completedModes.length;
                 
                 button.innerHTML = `
@@ -970,10 +925,10 @@ Pteranodon: Light Mystery`,
                     <div class="mode-name">${mode.name}</div>
                 `;
                 
-                if (isWizard && modeCount < 8) {
+                if (isWizard && modeCount < 6) {
                     button.classList.add('locked');
                     button.disabled = true;
-                    button.title = `Complete ${8 - modeCount} more modes`;
+                    button.title = `Capture ${6 - modeCount} more dinosaurs`;
                 } else if (isCompleted) {
                     button.classList.add('completed');
                     button.onclick = () => viewMode(mode);
@@ -987,15 +942,30 @@ Pteranodon: Light Mystery`,
                 
                 selector.appendChild(button);
             });
+
+            // Add Visitor's Center button if 6 completed
+            if (gameState.completedModes.length >= 6) {
+                const wizardBtn = document.createElement('button');
+                wizardBtn.className = 'mode-button available';
+                const wizardMode = gameData.majorModes.find(m => m.id === 'visitors');
+                wizardBtn.innerHTML = `
+                    <div class="mode-icon">${wizardMode.icon}</div>
+                    <div class="mode-name">${wizardMode.name}</div>
+                `;
+                wizardBtn.onclick = () => startMode(wizardMode);
+                selector.appendChild(wizardBtn);
+            }
         }
 
         // Mode control functions
         function startMode(mode) {
             gameState.currentMode = mode.id;
-            if (mode.type === 'multiball') {
-                gameState.activeMultiballs++;
-                gameState.multiballActive = true;
-                showMultiballIndicator();
+            if (mode.type === 'paddock' || mode.type === 'wizard') {
+                if (mode.multiball) {
+                    gameState.activeMultiballs++;
+                    gameState.multiballActive = true;
+                    showMultiballIndicator();
+                }
             }
             document.getElementById('modeInfo').innerHTML = createModeDisplay(mode);
             updateModeSelector();
@@ -1004,7 +974,7 @@ Pteranodon: Light Mystery`,
         }
 
         function endMode(mode) {
-            if (mode.type === 'multiball') {
+            if (mode.multiball) {
                 gameState.activeMultiballs = Math.max(0, gameState.activeMultiballs - 1);
                 if (gameState.activeMultiballs === 0) {
                     gameState.multiballActive = false;
@@ -1023,7 +993,7 @@ Pteranodon: Light Mystery`,
             updateModeSelector();
         }
 
-        // Create mode display
+        // Create mode display (updated for paddock mechanics)
         function createModeDisplay(mode) {
             const isActive = gameState.currentMode === mode.id;
             const isCompleted = gameState.completedModes.includes(mode.id);
@@ -1046,7 +1016,7 @@ Pteranodon: Light Mystery`,
                         <div class="requirements-list">`;
 
             mode.requirements.forEach(req => {
-                const check = isCompleted ? '✅' : (isActive && modeCount >= gameData.majorModes.findIndex(m => m.id === mode.id)) ? '🔥' : '🔒';
+                const check = isCompleted ? '✅' : (isActive && modeCount >= gameData.majorModes.slice(0,6).findIndex(m => m.id === mode.id)) ? '🔥' : '🔒';
                 html += `<div class="requirement"><span class="requirement-icon">${check}</span>${req}</div>`;
             });
 
@@ -1057,7 +1027,7 @@ Pteranodon: Light Mystery`,
             html += `</div></div><div class="gimmick-grid">`;
 
             mode.shots.forEach((shot, index) => {
-                const progressKey = `${mode.id}_${shot.name}`;
+                const progressKey = `${mode.id}_${shot.name.replace(/\s+/g, '_')}`;
                 const currentProgress = gameState.shotProgress[progressKey] || 0;
                 const isShotCompleted = currentProgress >= shot.maxShots;
                 const progressPercent = (currentProgress / shot.maxShots) * 100;
@@ -1066,7 +1036,7 @@ Pteranodon: Light Mystery`,
                 html += `
                     <div class="gimmick-card ${isShotCompleted ? 'completed' : (isActive && currentProgress > 0) ? 'active' : ''}" onclick="completeShot('${mode.id}', '${shot.name.replace(/\s+/g, '_')}')">
                         <div class="gimmick-header">
-                            <span class="gimmick-name">${shot.name} ${shot.type === 'target' ? '🎯' : shot.type === 'ramp' ? '📈' : shot.type === 'loop' ? '🔄' : shot.type === 'bumper' ? '💥' : shot.type === 'orbit' ? '🌀' : shot.type === 'drop' ? '⬇️' : shot.type === 'standup' ? '📏' : shot.type === 'saucer' ? '🚀' : '⚡'}</span>
+                            <span class="gimmick-name">${shot.name} ${shot.type === 'target' ? '🎯' : shot.type === 'ramp' ? '📈' : shot.type === 'loop' ? '🔄' : shot.type === 'bumper' ? '💥' : shot.type === 'orbit' ? '🌀' : shot.type === 'drop' ? '⬇️' : shot.type === 'standup' ? '📏' : shot.type === 'saucer' ? '🚀' : shot.type === 'pit' ? '🕳️' : shot.type === 'letter' ? '🔤' : shot.type === 'switch' ? '🔄' : shot.type === 'moving' ? '➡️' : shot.type === 'streak' ? '🔥' : shot.type === 'combo' ? '🔗' : shot.type === 'playfield' ? '🎪' : '⚡'}</span>
                             <span>${currentProgress}/${shot.maxShots} ${isShotCompleted ? '✅' : ''}</span>
                         </div>
                         <div class="gimmick-progress">
@@ -1079,7 +1049,7 @@ Pteranodon: Light Mystery`,
                         <div class="gimmick-details">
                             <strong>Type:</strong> ${shot.type.toUpperCase()}<br>
                             <strong>Requirement:</strong> ${shot.maxShots} shots<br>
-                            ${isShotCompleted ? `<strong>Completed!</strong> ${shot.value}` : `<strong>Active:</strong> ${currentProgress > 0 ? 'In Progress' : 'Start Shooting!'}`}
+                            ${isShotCompleted ? `<strong>Completed!</strong> ${shot.value}` : `<strong>Active:</strong> ${currentProgress > 0 ? 'In Progress (Build Streak!)' : 'Start Rescues/White Shots!'}`}
                         </div>
                     </div>`;
             });
@@ -1183,7 +1153,7 @@ Pteranodon: Light Mystery`,
             });
         }
 
-        // Shot completion
+        // Shot completion (updated for streaks/perks)
         function completeShot(modeId, shotName) {
             if (gameState.currentMode !== modeId) return;
             
@@ -1196,8 +1166,9 @@ Pteranodon: Light Mystery`,
                 const nextProgress = currentProgress + 1;
                 gameState.shotProgress[progressKey] = nextProgress;
                 
-                // Add points to total
-                const points = shot.points[Math.min(currentProgress, shot.points.length - 1)] || shot.points[0];
+                // Add points (streak bonus simulation)
+                let points = shot.points[Math.min(currentProgress, shot.points.length - 1)] || shot.points[0];
+                if (shot.type === 'streak' || shot.type === 'combo') points *= (1 + nextProgress * 0.5);  // Streak multiplier
                 gameState.totalScore += points;
                 
                 // Update display
@@ -1224,26 +1195,24 @@ Pteranodon: Light Mystery`,
                 const shotCards = document.querySelectorAll('#modeInfo .gimmick-card');
                 shotCards.forEach(card => {
                     card.style.cursor = gameState.currentMode === mode.id ? 'pointer' : 'default';
-                    card.title = gameState.currentMode === mode.id ? 'Click to complete shot' : '';
+                    card.title = gameState.currentMode === mode.id ? 'Click to complete shot (build rescues!)' : '';
                 });
             }, 100);
         }
 
-        // Complete mode
+        // Complete mode (updated for 6 dinosaurs → wizard)
         function completeMode(mode) {
             if (!gameState.completedModes.includes(mode.id)) {
                 gameState.completedModes.push(mode.id);
                 
-                // Award completion bonus
-                gameState.totalScore += 50000000; // 50M completion bonus
-                
-                // Wizard mode unlock
-                if (mode.id === 'wizard' && gameState.completedModes.length === 9) {
-                    alert('🎉 CONGRATULATIONS! You\'ve completed Jurassic Park Wizard Mode! 🦖🏆');
-                } else if (gameState.completedModes.length === 8 && !gameState.completedModes.includes('wizard')) {
-                    const wizardMode = gameData.majorModes.find(m => m.id === 'wizard');
+                // Award completion bonus + perk
+                gameState.totalScore += 50000000; // 50M + Jurassic Perk simulation
+                if (mode.id === 'visitors' && gameState.completedModes.length === 7) {
+                    alert('🎉 CONGRATULATIONS! Visitor\'s Center & Wizards Complete! 🏛️🦖');
+                } else if (gameState.completedModes.length === 6 && !gameState.completedModes.includes('visitors')) {
+                    const wizardMode = gameData.majorModes.find(m => m.id === 'visitors');
                     setTimeout(() => {
-                        if (confirm(`🎉 All 8 base modes completed! Start ${wizardMode.name}?`)) {
+                        if (confirm(`🎉 All 6 dinosaurs captured! Enter ${wizardMode.name}? Spell MAP!`)) {
                             startMode(wizardMode);
                         }
                     }, 1000);
@@ -1254,12 +1223,14 @@ Pteranodon: Light Mystery`,
             }
         }
 
-        // Gimmick functions
+        // Gimmick functions (updated for control room/tasks)
         function progressGimmick(gimmick) {
             const current = gameState.gimmickProgress[gimmick.id] || 0;
             if (current < gimmick.maxProgress) {
                 gameState.gimmickProgress[gimmick.id] = current + 1;
-                gameState.totalScore += 25000000; // 25M for gimmick progress
+                let bonus = 25000000;
+                if (gimmick.id === 'controlroom') bonus += 50000000;  // Higher for tasks
+                gameState.totalScore += bonus;
                 updateGimmickGrid();
                 updateGameStats();
             }
@@ -1270,7 +1241,9 @@ Pteranodon: Light Mystery`,
                 gameState.gimmickProgress[multiball.id]++;
                 gameState.activeMultiballs++;
                 gameState.multiballActive = true;
-                gameState.totalScore += 75000000; // 75M multiball start bonus
+                let bonus = 75000000;
+                if (multiball.id === 'chaos') bonus *= 2;  // Higher for chaos
+                gameState.totalScore += bonus;
                 showMultiballIndicator();
                 updateMultiballGrid();
                 updateGameStats();
@@ -1280,7 +1253,7 @@ Pteranodon: Light Mystery`,
                         hideMultiballIndicator();
                     }
                     updateGameStats();
-                }, 30000); // 30 second multiball
+                }, 45000); // ~45s for MB duration
             }
         }
 
@@ -1288,13 +1261,15 @@ Pteranodon: Light Mystery`,
             const current = gameState.gimmickProgress[award.id] || 0;
             if (current < award.maxProgress) {
                 gameState.gimmickProgress[award.id] = current + 1;
-                gameState.totalScore += 10000000; // 10M award bonus
+                let bonus = 10000000;
+                if (award.id === 'extraball') bonus += 50000000;  // EB value
+                gameState.totalScore += bonus;
                 updateAwardsGrid();
                 updateGameStats();
             }
         }
 
-        // Control functions
+        // Control functions (updated for new structure)
         function resetGame() {
             if (confirm('Reset ALL progress? This cannot be undone.')) {
                 initGame();
@@ -1307,12 +1282,14 @@ Pteranodon: Light Mystery`,
             const currentTab = gameState.currentTab;
             if (currentTab === 'modes' && gameState.currentMode) {
                 const mode = gameData.majorModes.find(m => m.id === gameState.currentMode);
-                if (mode && confirm(`Complete all shots in ${mode.name}?`)) {
+                if (mode && confirm(`Complete all shots in ${mode.name}? (Capture Dino!)`)) {
                     mode.shots.forEach(shot => {
                         const key = `${mode.id}_${shot.name.replace(/\s+/g, '_')}`;
                         gameState.shotProgress[key] = shot.maxShots;
                         for (let i = 0; i < shot.maxShots; i++) {
-                            gameState.totalScore += shot.points[Math.min(i, shot.points.length - 1)] || shot.points[0];
+                            let points = shot.points[Math.min(i, shot.points.length - 1)] || shot.points[0];
+                            if (shot.type === 'streak') points *= (1 + i * 0.5);
+                            gameState.totalScore += points;
                         }
                     });
                     completeMode(mode);
@@ -1346,11 +1323,11 @@ Pteranodon: Light Mystery`,
                 const randomMultiball = availableMultiballs[Math.floor(Math.random() * availableMultiballs.length)];
                 activateMultiball(randomMultiball);
             } else {
-                alert('No multiballs available! Complete some requirements first.');
+                alert('No multiballs available! Capture dinosaurs or spell letters first.');
             }
         }
 
-        // UI updates
+        // UI updates (updated for 6 modes)
         function updateGameStats() {
             const totalShots = gameData.majorModes.reduce((total, mode) => {
                 return total + mode.shots.reduce((sum, shot) => sum + shot.maxShots, 0);
@@ -1358,10 +1335,11 @@ Pteranodon: Light Mystery`,
             
             const completedShots = Object.values(gameState.shotProgress).reduce((sum, progress) => sum + progress, 0);
             const progressPercent = totalShots > 0 ? (completedShots / totalShots) * 100 : 0;
+            const baseModes = gameState.completedModes.filter(id => gameData.majorModes.slice(0,6).some(m => m.id === id)).length;
             
             document.getElementById('totalProgress').textContent = progressPercent.toFixed(1) + '%';
             document.getElementById('activeMultiballs').textContent = gameState.activeMultiballs;
-            document.getElementById('completedModes').textContent = `${gameState.completedModes.length}/9`;
+            document.getElementById('completedModes').textContent = `${baseModes}/6`;
             document.getElementById('totalScore').textContent = formatPoints(gameState.totalScore);
         }
 
@@ -1383,10 +1361,11 @@ Pteranodon: Light Mystery`,
         document.addEventListener('DOMContentLoaded', function() {
             initGame();
             
-            // Tab switching event listeners
+            // Tab switching event listeners (updated for new tab names)
             document.querySelectorAll('.tab-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    switchTab(this.textContent.trim().split(' ')[1].toLowerCase());
+                button.addEventListener('click', function(e) {
+                    const tabText = this.textContent.trim().split(' ')[1].toLowerCase().replace(/[^\w]/g, '');  // Extract tab name
+                    switchTab(tabText === 'paddock' ? 'modes' : tabText);  // Handle 'Paddock Modes'
                 });
             });
         });
